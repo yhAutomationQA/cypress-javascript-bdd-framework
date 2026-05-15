@@ -6,7 +6,9 @@ const {
 const {
   createEsbuildPlugin,
 } = require("@badeball/cypress-cucumber-preprocessor/esbuild");
+const { allureWriter } = require("@shelex/cypress-allure-plugin");
 const envManager = require("./config/env-manager");
+const { CYPRESS_CONFIG, ALLURE_CONFIG } = require("./config/report-config");
 
 const envConfig = envManager.load();
 
@@ -16,9 +18,14 @@ module.exports = defineConfig({
     specPattern: "**/*.feature",
     supportFile: "cypress/support/e2e.js",
     fixturesFolder: "cypress/fixtures",
-    screenshotsFolder: "reports/screenshots",
-    videosFolder: "reports/videos",
     downloadsFolder: "cypress/downloads",
+    screenshotsFolder: CYPRESS_CONFIG.screenshotsFolder,
+    videosFolder: CYPRESS_CONFIG.videosFolder,
+    video: CYPRESS_CONFIG.video,
+    videoCompression: CYPRESS_CONFIG.videoCompression,
+    screenshotOnRunFailure: CYPRESS_CONFIG.screenshotOnRunFailure,
+    reporter: CYPRESS_CONFIG.reporter,
+    reporterOptions: CYPRESS_CONFIG.reporterOptions,
     viewportWidth: 1280,
     viewportHeight: 720,
     defaultCommandTimeout: envConfig.timeouts.explicit,
@@ -26,9 +33,6 @@ module.exports = defineConfig({
     waitForAnimations: true,
     animationDistanceThreshold: 5,
     chromeWebSecurity: false,
-    video: true,
-    videoCompression: 32,
-    screenshotOnRunFailure: true,
     trashAssetsBeforeRuns: true,
     retries: {
       runMode: 1,
@@ -36,6 +40,7 @@ module.exports = defineConfig({
     },
     env: {
       ...envManager.getCypressEnv(),
+      ...ALLURE_CONFIG,
       TAGS: "not @ignore",
     },
     async setupNodeEvents(on, config) {
@@ -46,6 +51,7 @@ module.exports = defineConfig({
           plugins: [createEsbuildPlugin(config)],
         })
       );
+      allureWriter(on, config);
       return config;
     },
   },

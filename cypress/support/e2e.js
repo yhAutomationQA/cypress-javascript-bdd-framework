@@ -1,12 +1,14 @@
 import "./commands";
+require("@shelex/cypress-allure-plugin");
 
-Cypress.on("uncaught:exception", (err, runnable) => {
-  console.error("Uncaught Exception:", err.message);
+Cypress.on("uncaught:exception", (_err, _runnable) => {
+  console.error("Uncaught Exception:", _err.message);
   return false;
 });
 
 Cypress.on("fail", (error, runnable) => {
-  cy.screenshot(`failure-${runnable.title}`);
+  const screenshotName = `failure-${runnable.title.replace(/[^a-zA-Z0-9]/g, "_")}`;
+  cy.screenshot(screenshotName, { capture: "fullPage" });
   throw error;
 });
 
@@ -22,4 +24,11 @@ before(() => {
 
 after(() => {
   cy.log("Test suite execution completed");
+});
+
+afterEach(function () {
+  if (this.currentTest && this.currentTest.state === "failed") {
+    const testName = this.currentTest.title.replace(/[^a-zA-Z0-9]/g, "_");
+    cy.screenshot(`afterEach-${testName}`, { capture: "fullPage" });
+  }
 });

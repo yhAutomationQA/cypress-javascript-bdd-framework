@@ -2,6 +2,12 @@ node_modules/
 cypress/downloads/
 reports/screenshots/
 reports/videos/
+reports/allure-results/
+reports/allure-report/
+reports/mochawesome/
+reports/mochawesome-report/
+reports/cucumber-report/
+reports/logs/
 reports/*.html
 reports/*.json
 *.log
