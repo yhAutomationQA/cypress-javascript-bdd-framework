@@ -173,7 +173,9 @@ class ResponseValidator {
 
   _getNestedValue(obj, fieldPath) {
     return fieldPath.split(".").reduce((current, key) => {
-      if (current === null || current === undefined) return undefined;
+      if (current === null || current === undefined) {
+        return undefined;
+      }
       if (Array.isArray(current)) {
         const index = parseInt(key, 10);
         return isNaN(index) ? undefined : current[index];

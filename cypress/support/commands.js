@@ -1,7 +1,9 @@
 Cypress.Commands.add("loginByUi", (username, password) => {
   cy.visit("/");
-  cy.get("#user-name").clear().type(username);
-  cy.get("#password").clear().type(password, { log: false });
+  cy.get("#user-name").clear();
+  cy.get("#user-name").type(username);
+  cy.get("#password").clear();
+  cy.get("#password").type(password, { log: false });
   cy.get("#login-button").click();
   cy.url().should("contain", "/inventory.html");
 });

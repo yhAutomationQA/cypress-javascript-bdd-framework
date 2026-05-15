@@ -27,10 +27,8 @@ class BasePage {
   }
 
   typeText(selector, text, options = {}) {
-    cy.get(selector)
-      .should("be.visible")
-      .clear()
-      .type(text, { delay: 10, ...options });
+    cy.get(selector).should("be.visible").clear();
+    cy.get(selector).type(text, { delay: 10, ...options });
     return this;
   }
 

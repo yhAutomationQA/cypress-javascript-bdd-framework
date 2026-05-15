@@ -1,7 +1,7 @@
+/* eslint-disable no-console */
+
 const fs = require("fs");
 const path = require("path");
-
-const FEATURES_GLOB = "cypress/e2e/features/**/*.feature";
 
 function discoverFeatureFiles(baseDir = process.cwd()) {
   const featuresDir = path.join(baseDir, "cypress/e2e/features");

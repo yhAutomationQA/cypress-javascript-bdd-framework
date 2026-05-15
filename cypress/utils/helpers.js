@@ -64,7 +64,9 @@ class Helpers {
   }
 
   static maskSensitiveData(data) {
-    if (!data) return data;
+    if (!data) {
+      return data;
+    }
     return data.replace(/./g, "*");
   }
 
@@ -79,8 +81,10 @@ class Helpers {
     const execute = () => {
       return fn().catch((err) => {
         attempt++;
-        if (attempt >= retries) throw err;
-        return cy.wait(delay).then(execute);
+        if (attempt >= retries) {
+          throw err;
+        }
+        return Helpers.wait(delay).then(execute);
       });
     };
     return execute();

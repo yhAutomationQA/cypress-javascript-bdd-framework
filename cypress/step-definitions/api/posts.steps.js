@@ -7,7 +7,7 @@ Then("each item should have the required post fields", () => {
   expect(response).to.not.be.null;
   expect(response.body).to.be.an("array");
 
-  response.body.forEach((item, index) => {
+  response.body.forEach((item, _index) => {
     expect(item).to.have.property("userId");
     expect(item).to.have.property("id");
     expect(item).to.have.property("title");
@@ -38,7 +38,7 @@ Then("each item should be a valid comment object", () => {
   const response = Cypress.env("apiResponse");
   expect(response).to.not.be.null;
   expect(response.body).to.be.an("array");
-  response.body.forEach((item, index) => {
+  response.body.forEach((item, _index) => {
     expect(item).to.have.property("postId");
     expect(item).to.have.property("id");
     expect(item).to.have.property("name");

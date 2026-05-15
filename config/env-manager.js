@@ -21,7 +21,9 @@ class EnvManager {
   }
 
   load() {
-    if (this._loaded) return this._config;
+    if (this._loaded) {
+      return this._config;
+    }
 
     const envFilePath = path.resolve(process.cwd(), `.env.${this.targetEnv}`);
 
@@ -73,12 +75,16 @@ class EnvManager {
   }
 
   get(key) {
-    if (!this._loaded) this.load();
+    if (!this._loaded) {
+      this.load();
+    }
     return this._config[key];
   }
 
   getAll() {
-    if (!this._loaded) this.load();
+    if (!this._loaded) {
+      this.load();
+    }
     return { ...this._config };
   }
 
@@ -115,14 +121,18 @@ class EnvManager {
 
   buildUrl(pathname = "") {
     const base = this.get("baseUrl");
-    if (!base) return pathname;
+    if (!base) {
+      return pathname;
+    }
     const joined = [base.replace(/\/+$/, ""), pathname.replace(/^\/+/, "")];
     return joined.join("/");
   }
 
   buildApiUrl(pathname = "") {
     const api = this.get("apiUrl");
-    if (!api) return pathname;
+    if (!api) {
+      return pathname;
+    }
     const joined = [api.replace(/\/+$/, ""), pathname.replace(/^\/+/, "")];
     return joined.join("/");
   }

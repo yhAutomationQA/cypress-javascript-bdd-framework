@@ -210,8 +210,12 @@ class ApiClient {
     const mergedHeaders = this._mergeHeaders(headers);
 
     cy.log(`${method} ${url}`);
-    if (body) cy.log(`Body: ${JSON.stringify(body)}`);
-    if (Object.keys(qs).length > 0) cy.log(`Query Params: ${JSON.stringify(qs)}`);
+    if (body) {
+      cy.log(`Body: ${JSON.stringify(body)}`);
+    }
+    if (Object.keys(qs).length > 0) {
+      cy.log(`Query Params: ${JSON.stringify(qs)}`);
+    }
 
     return cy
       .request({

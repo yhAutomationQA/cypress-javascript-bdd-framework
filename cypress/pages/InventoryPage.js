@@ -53,7 +53,6 @@ class InventoryPage extends BasePage {
   }
 
   addItemToCart(itemName) {
-    const itemId = itemName.toLowerCase().replace(/\s+/g, "-");
     cy.contains(".inventory_item_name", itemName)
       .parents(".inventory_item")
       .within(() => {
@@ -82,7 +81,7 @@ class InventoryPage extends BasePage {
   }
 
   closeSidebar() {
-    cy.get(this.selectors.sidebarOverlay).click({ force: true });
+    cy.get(this.selectors.burgerMenuButton).click();
     return this;
   }
 
