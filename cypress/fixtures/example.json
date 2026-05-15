@@ -1,0 +1,40 @@
+{
+  "baseUrl": "https://example.com",
+  "users": {
+    "admin": {
+      "email": "admin@example.com",
+      "password": "admin123",
+      "name": "Admin User",
+      "role": "administrator"
+    },
+    "standard": {
+      "email": "user@example.com",
+      "password": "user123",
+      "name": "Standard User",
+      "role": "user"
+    },
+    "locked": {
+      "email": "locked@example.com",
+      "password": "user123",
+      "name": "Locked User",
+      "role": "user",
+      "status": "locked"
+    }
+  },
+  "apiEndpoints": {
+    "login": "/api/v1/auth/login",
+    "logout": "/api/v1/auth/logout",
+    "refreshToken": "/api/v1/auth/refresh",
+    "users": "/api/v1/users"
+  },
+  "timeouts": {
+    "implicit": 5000,
+    "explicit": 10000,
+    "pageLoad": 30000
+  },
+  "messages": {
+    "loginSuccess": "Welcome",
+    "loginFailed": "Invalid email or password",
+    "accountLocked": "Your account has been locked"
+  }
+}

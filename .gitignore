@@ -1,0 +1,12 @@
+node_modules/
+cypress/downloads/
+reports/screenshots/
+reports/videos/
+reports/*.html
+reports/*.json
+*.log
+.DS_Store
+cypress/screenshots/
+cypress/videos/
+.env
+.env.local

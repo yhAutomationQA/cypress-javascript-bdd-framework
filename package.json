@@ -1,0 +1,32 @@
+{
+  "name": "cypress-javascript-bdd-framework",
+  "version": "1.0.0",
+  "description": "Enterprise-grade Cypress BDD automation framework with Cucumber",
+  "private": true,
+  "scripts": {
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run",
+    "cypress:run:chrome": "cypress run --browser chrome",
+    "cypress:run:firefox": "cypress run --browser firefox",
+    "cypress:run:edge": "cypress run --browser edge",
+    "cypress:run:headless": "cypress run --headless",
+    "cypress:run:record": "cypress run --record",
+    "cypress:run:spec": "cypress run --spec",
+    "cypress:run:tag": "cypress run --env Tags=",
+    "lint": "eslint cypress/",
+    "lint:fix": "eslint cypress/ --fix",
+    "format": "prettier --write 'cypress/**/*.{js,json,feature}'",
+    "format:check": "prettier --check 'cypress/**/*.{js,json,feature}'",
+    "precommit": "npm run lint:fix && npm run format",
+    "clean:reports": "rm -rf reports/*"
+  },
+  "devDependencies": {
+    "@badeball/cypress-cucumber-preprocessor": "^21.0.3",
+    "@bahmutov/cypress-esbuild-preprocessor": "^2.2.4",
+    "cypress": "^13.17.0",
+    "esbuild": "^0.25.0",
+    "eslint": "^8.57.1",
+    "eslint-plugin-cypress": "^3.6.0",
+    "prettier": "^3.4.2"
+  }
+}
