@@ -12,6 +12,7 @@ Enterprise-grade Cypress automation framework using Cucumber BDD with JavaScript
 - **dotenv** ^16.4 — Environment variable management
 - **ESLint** ^8.57 — Static analysis
 - **Prettier** ^3.4 — Code formatting
+- **Docker** — Containerized execution with `cypress/base:20`
 
 ## Folder Structure
 
@@ -65,6 +66,9 @@ Enterprise-grade Cypress automation framework using Cucumber BDD with JavaScript
 ├── .env.example                  # Environment template (tracked in git)
 ├── cypress.config.js             # Cypress configuration
 └── package.json
+└── Dockerfile                    # Multi-stage Cypress Docker image
+└── docker-compose.yml            # Container orchestration with mounts
+└── .dockerignore                 # Minimal Docker build context
 ```
 
 ## Quick Start
@@ -74,6 +78,78 @@ npm install
 npm run open          # Launch Cypress Test Runner (default: dev)
 npm run test          # Headless execution (default: dev)
 ```
+
+## Docker Execution
+
+Run tests in a containerized environment with zero local setup (no Node, no Cypress needed).
+
+### Prerequisites
+- Docker Desktop 4.x+
+- 4GB+ allocated RAM
+
+### Build the image
+
+```bash
+npm run docker:build
+```
+
+### Run tests
+
+```bash
+# All tests (default: dev environment)
+npm run docker:test
+
+# Specific environment
+npm run docker:test:qa
+npm run docker:test:staging
+
+# By tag
+npm run docker:smoke
+npm run docker:regression
+npm run docker:api
+
+# With custom environment variable
+ENV=qa docker compose run --rm cypress npx cypress run --browser chrome --env Tags=@smoke
+```
+
+### How it works
+
+```bash
+docker compose run --rm cypress npx cypress run --browser chrome
+         │              │       │
+         │              │       └─ Override CMD (default: --browser chrome)
+         │              └─ Service name from docker-compose.yml
+         └─ --rm removes container after run
+```
+
+### Volume mounts
+
+| Host path | Container path | Purpose |
+|-----------|---------------|---------|
+| `reports/screenshots/` | `/app/reports/screenshots/` | Failure screenshots |
+| `reports/videos/` | `/app/reports/videos/` | Test recordings |
+| `reports/allure-results/` | `/app/reports/allure-results/` | Allure raw data |
+| `reports/mochawesome/` | `/app/reports/mochawesome/` | Mochawesome JSON |
+| `reports/cucumber-report/` | `/app/reports/cucumber-report/` | Cucumber JSON |
+| `reports/logs/` | `/app/reports/logs/` | Execution logs |
+
+### Docker architecture
+
+The `Dockerfile` uses multi-stage builds:
+
+| Stage | Base | Purpose |
+|-------|------|---------|
+| `base` | `cypress/base:20` | Node 20 + system dependencies |
+| `dependencies` | `base` | npm install + Cypress verify (cached layer) |
+| `production` | `dependencies` | Source code + report dirs (final image) |
+
+**Performance optimizations:**
+- Multi-stage build minimizes final image size
+- `package.json` copied first for npm layer caching (only re-installs when deps change)
+- `CI=1` disables Cypress GUI overhead
+- `ipc: host` and `init: true` for stable process handling
+- `--prefer-offline` npm flag for faster installs
+- `.dockerignore` excludes 90% of build context (reports, git, env files, node_modules)
 
 ## Application Under Test
 
@@ -233,6 +309,19 @@ The `posts.feature` covers 10 scenarios across all CRUD operations, negative tes
 | `report:mochawesome:merge` | Merge mochawesome JSON files |
 | `report:mochawesome:generate` | Generate HTML from merged JSON |
 | `report:clean` | Clean all report artifacts |
+
+### Docker
+| Script | Description |
+|--------|-------------|
+| `docker:build` | Build Docker image with --pull |
+| `docker:test` | Run all tests in container |
+| `docker:test:dev` | Run in dev environment |
+| `docker:test:qa` | Run in QA environment |
+| `docker:test:staging` | Run in staging environment |
+| `docker:smoke` | Run `@smoke` tests in container |
+| `docker:regression` | Run `@regression` tests in container |
+| `docker:api` | Run `@api` tests in container |
+| `docker:bash` | Open bash shell in container |
 
 ### Code Quality
 | Script | Description |
