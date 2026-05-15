@@ -8,5 +8,14 @@
   "bracketSpacing": true,
   "arrowParens": "always",
   "endOfLine": "lf",
-  "proseWrap": "preserve"
+  "proseWrap": "preserve",
+  "plugins": ["prettier-plugin-gherkin"],
+  "overrides": [
+    {
+      "files": "*.feature",
+      "options": {
+        "parser": "gherkin"
+      }
+    }
+  ]
 }

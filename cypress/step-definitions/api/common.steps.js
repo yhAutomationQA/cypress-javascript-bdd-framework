@@ -55,12 +55,14 @@ When("I send a {string} request to {string}", (method, path) => {
   const body = Cypress.env("apiRequestBody");
   cy.log(`Sending ${method} request to: ${path}`);
 
-  apiClient.send(method, path, { body, failOnStatusCode: false }).then((res) => {
-    response = res;
-    cy.wrap(null).then(() => {
-      Cypress.env("apiResponse", response);
+  apiClient
+    .send(method, path, { body, failOnStatusCode: false })
+    .then((res) => {
+      response = res;
+      cy.wrap(null).then(() => {
+        Cypress.env("apiResponse", response);
+      });
     });
-  });
 });
 
 When("I send a GET request to {string}", (path) => {
@@ -126,15 +128,21 @@ Then("the response should have field {string}", (fieldPath) => {
   ResponseValidator.from(response).bodyHasField(fieldPath);
 });
 
-Then("the response should have field {string} with value {string}", (fieldPath, expected) => {
-  expect(response).to.not.be.null;
-  ResponseValidator.from(response).bodyFieldEquals(fieldPath, expected);
-});
+Then(
+  "the response should have field {string} with value {string}",
+  (fieldPath, expected) => {
+    expect(response).to.not.be.null;
+    ResponseValidator.from(response).bodyFieldEquals(fieldPath, expected);
+  }
+);
 
-Then("the response should have field {string} with value {int}", (fieldPath, expected) => {
-  expect(response).to.not.be.null;
-  ResponseValidator.from(response).bodyFieldEquals(fieldPath, expected);
-});
+Then(
+  "the response should have field {string} with value {int}",
+  (fieldPath, expected) => {
+    expect(response).to.not.be.null;
+    ResponseValidator.from(response).bodyFieldEquals(fieldPath, expected);
+  }
+);
 
 Then("the response body should equal:", (expectedBodyString) => {
   expect(response).to.not.be.null;

@@ -41,9 +41,12 @@ Given("the user is on the SauceDemo login page", () => {
   loginPage.errorShouldNotExist();
 });
 
-When("the user logs in with username {string} and password {string}", (username, password) => {
-  loginPage.login(username, password);
-});
+When(
+  "the user logs in with username {string} and password {string}",
+  (username, password) => {
+    loginPage.login(username, password);
+  }
+);
 
 When("the user enters username {string}", (username) => {
   loginPage.enterUsername(username);

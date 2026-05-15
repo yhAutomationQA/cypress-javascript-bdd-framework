@@ -51,7 +51,8 @@ class ApiClient {
     cy.log(`API: ${method} ${url}`);
     cy.log(`Status: ${response.status} (${response.duration}ms)`);
     if (reqBody) {
-      const logBody = typeof reqBody === "object" ? JSON.stringify(reqBody) : reqBody;
+      const logBody =
+        typeof reqBody === "object" ? JSON.stringify(reqBody) : reqBody;
       cy.log(`Request Body: ${logBody.substring(0, 500)}`);
     }
     if (response.body) {
@@ -72,7 +73,8 @@ class ApiClient {
     cy.log(`API FAILED: ${method} ${url}`);
     cy.log(`Error: ${error.message}`);
     if (reqBody) {
-      const logBody = typeof reqBody === "object" ? JSON.stringify(reqBody) : reqBody;
+      const logBody =
+        typeof reqBody === "object" ? JSON.stringify(reqBody) : reqBody;
       cy.log(`Request Body: ${logBody}`);
     }
     cy.log(separator);

@@ -39,14 +39,24 @@ class SchemaValidator {
       for (const [key, propSchema] of Object.entries(schema.properties)) {
         const fieldPath = `${path}.${key}`;
         if (data[key] !== undefined) {
-          SchemaValidator._validateNode(data[key], propSchema, errors, fieldPath);
+          SchemaValidator._validateNode(
+            data[key],
+            propSchema,
+            errors,
+            fieldPath
+          );
         }
       }
     }
 
     if (schema.items && Array.isArray(data)) {
       for (let i = 0; i < data.length; i++) {
-        SchemaValidator._validateNode(data[i], schema.items, errors, `${path}[${i}]`);
+        SchemaValidator._validateNode(
+          data[i],
+          schema.items,
+          errors,
+          `${path}[${i}]`
+        );
       }
     }
 
