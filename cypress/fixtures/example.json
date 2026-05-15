@@ -1,40 +1,51 @@
 {
-  "baseUrl": "https://example.com",
+  "baseUrl": "https://www.saucedemo.com",
   "users": {
-    "admin": {
-      "email": "admin@example.com",
-      "password": "admin123",
-      "name": "Admin User",
-      "role": "administrator"
-    },
     "standard": {
-      "email": "user@example.com",
-      "password": "user123",
-      "name": "Standard User",
-      "role": "user"
+      "username": "standard_user",
+      "password": "secret_sauce",
+      "displayName": "standard_user",
+      "type": "standard"
     },
     "locked": {
-      "email": "locked@example.com",
-      "password": "user123",
-      "name": "Locked User",
-      "role": "user",
-      "status": "locked"
+      "username": "locked_out_user",
+      "password": "secret_sauce",
+      "displayName": "locked_out_user",
+      "type": "locked",
+      "expectedError": "Sorry, this user has been locked out."
+    },
+    "problem": {
+      "username": "problem_user",
+      "password": "secret_sauce",
+      "displayName": "problem_user",
+      "type": "problem"
+    },
+    "performanceGlitch": {
+      "username": "performance_glitch_user",
+      "password": "secret_sauce",
+      "displayName": "performance_glitch_user",
+      "type": "performance_glitch"
+    },
+    "invalid": {
+      "username": "invalid_user",
+      "password": "wrong_password",
+      "displayName": "invalid_user",
+      "type": "invalid",
+      "expectedError": "Username and password do not match any user in this service"
     }
   },
-  "apiEndpoints": {
-    "login": "/api/v1/auth/login",
-    "logout": "/api/v1/auth/logout",
-    "refreshToken": "/api/v1/auth/refresh",
-    "users": "/api/v1/users"
-  },
-  "timeouts": {
-    "implicit": 5000,
-    "explicit": 10000,
-    "pageLoad": 30000
-  },
   "messages": {
-    "loginSuccess": "Welcome",
-    "loginFailed": "Invalid email or password",
-    "accountLocked": "Your account has been locked"
+    "loginSuccess": "Products",
+    "usernameRequired": "Username is required",
+    "passwordRequired": "Password is required",
+    "invalidCredentials": "Username and password do not match any user in this service",
+    "accountLocked": "Sorry, this user has been locked out."
+  },
+  "expected": {
+    "pageTitle": "Swag Labs",
+    "pageTitleLabel": "Products",
+    "inventoryCount": 6,
+    "loginUrl": "https://www.saucedemo.com",
+    "inventoryUrl": "https://www.saucedemo.com/inventory.html"
   }
 }

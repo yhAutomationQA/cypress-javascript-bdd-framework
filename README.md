@@ -21,6 +21,9 @@ Enterprise-grade Cypress automation framework using Cucumber BDD with JavaScript
 │   │   └── features/          # Gherkin .feature files
 │   ├── step-definitions/      # Cucumber step definitions
 │   ├── pages/                 # Page Object Models
+│   │   ├── BasePage.js
+│   │   ├── LoginPage.js
+│   │   └── InventoryPage.js
 │   ├── fixtures/              # Test data (JSON)
 │   ├── support/               # Custom commands & setup
 │   │   ├── commands.js
@@ -43,6 +46,19 @@ npm run open          # Launch Cypress Test Runner (default: dev)
 npm run test          # Headless execution (default: dev)
 ```
 
+## Application Under Test
+
+This framework targets **[SauceDemo](https://www.saucedemo.com)** — a demo e-commerce application.
+
+### Test Users
+
+| User | Password | Behavior |
+|------|----------|----------|
+| `standard_user` | `secret_sauce` | Standard login, full access |
+| `locked_out_user` | `secret_sauce` | Login rejected, account locked |
+| `problem_user` | `secret_sauce` | Login succeeds, UI issues |
+| `performance_glitch_user` | `secret_sauce` | Login succeeds, slow load |
+
 ## Environment Configuration
 
 The framework supports multi-environment execution via `.env.*` files managed by `config/env-manager.js`.
@@ -60,7 +76,7 @@ The framework supports multi-environment execution via `.env.*` files managed by
 ```bash
 # Specific environment
 ENV=qa npm run test
-ENV=staging npm run test:staging
+npm run test:staging
 
 # Open Cypress Runner for an environment
 ENV=qa npm run open
@@ -73,9 +89,8 @@ npm run open:qa
 |----------|----------|-------------|
 | `BASE_URL` | Yes | Application base URL |
 | `API_URL` | Yes | API base URL |
-| `USERNAME` | Yes | Default test user email |
+| `USERNAME` | Yes | Default test user |
 | `PASSWORD` | Yes | Default test user password |
-| `API_KEY` | No | API key for authenticated requests |
 | `IMPLICIT_TIMEOUT` | No | Default element wait (ms) |
 | `EXPLICIT_TIMEOUT` | No | Explicit wait timeout (ms) |
 | `PAGE_LOAD_TIMEOUT` | No | Page load timeout (ms) |
@@ -85,25 +100,15 @@ npm run open:qa
 The `config/env-manager.js` provides runtime helpers accessible in tests:
 
 ```js
-// Access via Cypress.env (available in all tests)
-Cypress.env("BASE_URL")         // "https://qa.example.com"
-Cypress.env("API_URL")          // "https://api.qa.example.com"
-Cypress.env("USERNAME")         // "qa-user@example.com"
-Cypress.env("PASSWORD")         // "qa-pass-456"
+Cypress.env("BASE_URL")         // "https://www.saucedemo.com"
+Cypress.env("USERNAME")         // "standard_user"
+Cypress.env("PASSWORD")         // "secret_sauce"
 Cypress.env("ENV")              // "qa"
 
-// Access via helpers.js
 Helpers.getBaseUrl()            // Current env baseUrl
-Helpers.getApiUrl()             // Current env apiUrl
 Helpers.getCredentials()        // { username, password }
 Helpers.getTimeout("explicit")  // Current env explicit timeout
 ```
-
-### Adding a New Environment
-
-1. Create `.env.<name>` with required variables
-2. Run with `ENV=<name> npm run test`
-3. Optionally add an npm script: `"test:<name>": "ENV=<name> cypress run"`
 
 ## NPM Scripts
 
@@ -120,7 +125,6 @@ Helpers.getTimeout("explicit")  // Current env explicit timeout
 | `open:qa` | Open Cypress in QA env |
 | `open:staging` | Open Cypress in staging env |
 | `cypress:run:tag` | Run by tag: `npm run cypress:run:tag -- Tags="@smoke"` |
-| `cypress:run:spec` | Run specific file |
 | `lint` | ESLint check |
 | `lint:fix` | ESLint auto-fix |
 | `format` | Prettier format |
@@ -131,6 +135,8 @@ Helpers.getTimeout("explicit")  // Current env explicit timeout
 ```bash
 npm run cypress:run -- --env Tags="@smoke"
 ENV=qa npm run cypress:run -- --env Tags="@regression and not @ignore"
+npm run cypress:run -- --env Tags="@positive"
+npm run cypress:run -- --env Tags="@negative"
 ```
 
 ## Writing Tests
@@ -146,4 +152,5 @@ ENV=qa npm run cypress:run -- --env Tags="@regression and not @ignore"
 - **Environment-first** — All config driven by `.env.*` files, zero hardcoded secrets
 - **DRY** — Shared logic in BasePage, helpers, and custom commands
 - **Data-driven** — Scenario Outlines + fixtures for test data variation
-- **Tag-based** — Organize and filter tests by tags (@smoke, @regression, @negative)
+- **Tag-based** — Organize and filter tests by tags (@smoke, @regression, @negative, @positive)
+- **Reusable hooks** — Before/After hooks at feature, tag, and scenario level

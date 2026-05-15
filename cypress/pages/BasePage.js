@@ -4,7 +4,6 @@ class BasePage {
   }
 
   navigate(path = "") {
-    cy.allure().step(`Navigate to ${path}`);
     cy.visit(path);
     return this;
   }
@@ -20,7 +19,6 @@ class BasePage {
   }
 
   clickElement(selector, options = {}) {
-    cy.allure().step(`Click element: ${selector}`);
     cy.get(selector)
       .should("be.visible")
       .should("not.be.disabled")
@@ -29,7 +27,6 @@ class BasePage {
   }
 
   typeText(selector, text, options = {}) {
-    cy.allure().step(`Type "${text}" into: ${selector}`);
     cy.get(selector)
       .should("be.visible")
       .clear()
@@ -41,7 +38,7 @@ class BasePage {
     return cy.get(selector);
   }
 
-  getElementByText(text, tag = "a") {
+  getElementByText(text, tag = "*") {
     return cy.contains(tag, text);
   }
 
@@ -64,7 +61,6 @@ class BasePage {
   }
 
   selectDropdownOption(selector, option) {
-    cy.allure().step(`Select "${option}" from: ${selector}`);
     cy.get(selector).select(option);
     return this;
   }
@@ -93,12 +89,6 @@ class BasePage {
     cy.window().then((win) => {
       expect(win.document.readyState).to.eq("complete");
     });
-    return this;
-  }
-
-  waitForNetworkIdle(timeout = 10000) {
-    cy.intercept("**/*").as("networkRequests");
-    cy.wait("@networkRequests", { timeout });
     return this;
   }
 
