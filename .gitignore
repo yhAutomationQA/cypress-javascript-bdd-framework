@@ -1,5 +1,6 @@
 node_modules/
 cypress/downloads/
+.cache/
 reports/screenshots/
 reports/videos/
 reports/allure-results/
@@ -20,3 +21,4 @@ cypress/videos/
 .env.qa
 .env.staging
 .env.production
+cypress/scripts/node_modules/

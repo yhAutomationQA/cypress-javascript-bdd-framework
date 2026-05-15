@@ -1,0 +1,218 @@
+name: Cypress BDD CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        required: true
+        default: dev
+        type: choice
+        options:
+          - dev
+          - qa
+          - staging
+      tags:
+        description: Test tags to run (@smoke, @regression, @api)
+        required: false
+        default: "@smoke"
+      parallel:
+        description: Enable parallel execution
+        required: false
+        default: true
+        type: boolean
+  schedule:
+    - cron: "0 6 * * 1-5"
+
+env:
+  CYPRESS_CACHE_FOLDER: ${{ github.workspace }}/.cache/Cypress
+  ENV: ${{ github.event.inputs.environment || 'dev' }}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  lint:
+    name: Lint & Format Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: ESLint
+        run: npm run lint
+
+      - name: Prettier check
+        run: npm run format:check
+
+  smoke:
+    name: Smoke Tests
+    needs: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chrome, firefox]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Cache Cypress binary
+        id: cypress-cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.CYPRESS_CACHE_FOLDER }}
+          key: cypress-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Run smoke tests (${{ matrix.browser }})
+        uses: cypress-io/github-action@v6
+        timeout-minutes: 10
+        with:
+          install: false
+          browser: ${{ matrix.browser }}
+          command: npm run ci:smoke
+          env: ENV=${{ env.ENV }},Tags="@smoke"
+
+      - name: Archive smoke artifacts
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-${{ matrix.browser }}-${{ github.run_id }}
+          path: |
+            reports/screenshots/
+            reports/videos/
+            reports/allure-results/
+            reports/mochawesome/
+          retention-days: 7
+
+  regression:
+    name: Regression Tests
+    needs: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chrome]
+        parallel_index: [0, 1, 2]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Cache Cypress binary
+        id: cypress-cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.CYPRESS_CACHE_FOLDER }}
+          key: cypress-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Run regression tests (${{ matrix.browser }} - group ${{ matrix.parallel_index }})
+        uses: cypress-io/github-action@v6
+        timeout-minutes: 20
+        with:
+          install: false
+          browser: ${{ matrix.browser }}
+          command: npm run ci:regression:${{ matrix.parallel_index }}
+          env: ENV=${{ env.ENV }},Tags="@regression"
+        continue-on-error: true
+
+      - name: Archive regression artifacts
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: regression-${{ matrix.browser }}-g${{ matrix.parallel_index }}-${{ github.run_id }}
+          path: |
+            reports/screenshots/
+            reports/videos/
+            reports/allure-results/
+            reports/mochawesome/
+          retention-days: 14
+
+  generate-report:
+    name: Generate Consolidated Report
+    needs: [smoke, regression]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: downloaded-artifacts
+          merge-multiple: true
+
+      - name: Consolidate allure results
+        run: |
+          mkdir -p reports/allure-results reports/mochawesome
+          find downloaded-artifacts -name "*.json" -path "*/allure-results/*" -exec cp {} reports/allure-results/ \; 2>/dev/null || true
+          find downloaded-artifacts -name "*.json" -path "*/mochawesome/*" -exec cp {} reports/mochawesome/ \; 2>/dev/null || true
+          echo "Allure results count: $(ls reports/allure-results/*.json 2>/dev/null | wc -l)"
+          echo "Mochawesome files count: $(ls reports/mochawesome/*.json 2>/dev/null | wc -l)"
+
+      - name: Generate Allure report
+        run: npm run report:allure:generate
+        continue-on-error: true
+
+      - name: Generate Mochawesome report
+        run: npm run report:mochawesome:full
+        continue-on-error: true
+
+      - name: Upload consolidated report
+        uses: actions/upload-artifact@v4
+        with:
+          name: consolidated-report-${{ github.run_id }}
+          path: |
+            reports/allure-report/
+            reports/mochawesome-report/
+          retention-days: 30
+
+      - name: Deploy report to GitHub Pages
+        if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: reports/allure-report
+          destination_dir: allure-reports/${{ github.run_id }}
+          keep_files: true
