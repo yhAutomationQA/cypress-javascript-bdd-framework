@@ -1,272 +1,204 @@
 # Cypress JavaScript BDD Framework
 
-Enterprise-grade Cypress automation framework using Cucumber BDD with JavaScript.
+Enterprise-grade Cypress automation framework using Cucumber BDD with JavaScript. Supports UI and API testing with Allure + Mochawesome reporting, Docker execution, GitHub Actions and Jenkins CI/CD.
 
 ## Tech Stack
 
-- **Cypress** ^13.17 — Test runner
-- **Cucumber BDD** (@badeball/cypress-cucumber-preprocessor) ^21.0
-- **esbuild** preprocessor (@bahmutov/cypress-esbuild-preprocessor) ^2.2
-- **Allure** ^2.32 — Enterprise test reporting
-- **Mochawesome** ^7.1 — Standalone HTML reporting
-- **dotenv** ^16.4 — Environment variable management
-- **ESLint** ^8.57 — Static analysis
-- **Prettier** ^3.4 — Code formatting
-- **Docker** — Containerized execution with `cypress/base:20`
+| Tool | Version | Purpose |
+|------|---------|---------|
+| **Cypress** | ^13.17 | Test runner |
+| **Cucumber BDD** | ^21.0 | Gherkin feature files (`@badeball/cypress-cucumber-preprocessor`) |
+| **esbuild** | ^0.25 | JavaScript bundler (`@bahmutov/cypress-esbuild-preprocessor`) |
+| **Allure** | ^2.32 | Enterprise test reporting with trends, timelines, and steps |
+| **Mochawesome** | ^7.1 | Standalone HTML report with embedded screenshots |
+| **dotenv** | ^16.4 | Environment variable management |
+| **ESLint** | ^8.57 | Static analysis (curly braces, no unsafe chaining, no async tests) |
+| **Prettier** | ^3.4 | Code formatting (JS, JSON, and `.feature` files via `prettier-plugin-gherkin`) |
+| **Docker** | — | Containerized execution with `cypress/base:20` |
 
-## Folder Structure
+## Project Structure
 
 ```
 ├── config/
-│   ├── env-manager.js            # Environment configuration loader
-│   └── report-config.js          # Centralized reporting configuration
+│   ├── env-manager.js            # Singleton — loads .env.{ENV}, validates, exposes helpers
+│   └── report-config.js          # Centralized Allure + Mochawesome + Cypress report settings
 ├── cypress/
 │   ├── api/                      # API automation framework
-│   │   ├── api-client.js         # Reusable CRUD API client with logging
-│   │   ├── response-validator.js # Response status, body, header, duration assertions
-│   │   └── schema-validator.js   # JSON schema validation engine
+│   │   ├── api-client.js         # CRUD client (get/post/put/patch/delete/send) with auto-logging
+│   │   ├── response-validator.js # 25+ chained assertions: status, body, headers, duration
+│   │   └── schema-validator.js   # Zero-dependency JSON schema validator (12 constraint types)
 │   ├── e2e/
-│   │   ├── features/
-│   │   │   ├── api/
-│   │   │   │   └── posts.feature # Posts CRUD BDD scenarios
-│   │   │   └── login.feature     # Login BDD scenarios
+│   │   └── features/
+│   │       ├── api/
+│   │       │   └── posts.feature # 10 scenarios: CRUD + negative + schema for JSONPlaceholder
+│   │       └── login.feature     # 7 scenarios: login, logout, locked-out, empty credentials
 │   ├── step-definitions/
 │   │   ├── api/
-│   │   │   ├── common.steps.js   # Generic reusable API step definitions
-│   │   │   └── posts.steps.js    # Post-specific business steps
-│   │   └── login.steps.js        # Login step definitions
+│   │   │   ├── common.steps.js   # Generic steps: send request, assert status/body/headers/duration
+│   │   │   └── posts.steps.js    # Post-specific business steps: field checks, schema validation
+│   │   └── login.steps.js        # Login page steps: visit, login, assert error, assert redirect
 │   ├── pages/                    # Page Object Models
-│   │   ├── BasePage.js
-│   │   ├── LoginPage.js
-│   │   └── InventoryPage.js
-│   ├── fixtures/
+│   │   ├── BasePage.js           # Shared selectors: waitForPageReady, typeText, clickElement, etc.
+│   │   ├── LoginPage.js          # SauceDemo login form: enterUsername, enterPassword, login, etc.
+│   │   └── InventoryPage.js      # SauceDemo inventory: getInventoryCount, clickLogout, etc.
+│   ├── fixtures/                 # Test data (JSON)
 │   │   ├── api/
-│   │   │   ├── posts.json        # Posts API test data
+│   │   │   ├── posts.json        # Sample post objects for API tests
 │   │   │   └── schemas/
-│   │   │       └── posts-schema.json
-│   │   └── example.json          # UI test data
+│   │   │       └── posts-schema.json  # JSON schema definitions for post validation
+│   │   └── example.json          # UI test data examples
 │   ├── support/
-│   │   ├── commands.js           # Custom Cypress commands
-│   │   └── e2e.js                # Global hooks, error handling, Allure
+│   │   ├── commands.js           # Custom Cypress commands (loginByUi, loginByApi, getBySel, etc.)
+│   │   └── e2e.js                # Global hooks: error handling, screenshot on failure, Allure steps
 │   └── utils/
-│       ├── constants.js          # Shared constants
-│       └── helpers.js            # Utility functions
-├── reports/
-│   ├── allure-results/           # Raw Allure data (generated)
-│   ├── allure-report/            # Allure HTML report (generated)
-│   ├── mochawesome/              # Raw mochawesome JSON (generated)
-│   ├── mochawesome-report/       # Merged mochawesome HTML (generated)
-│   ├── cucumber-report/          # Cucumber JSON report (generated)
-│   ├── screenshots/              # Failure screenshots (generated)
-│   ├── videos/                   # Test execution videos (generated)
-│   └── logs/                     # Execution logs (generated)
-├── .env.dev                      # Development environment config
-├── .env.qa                       # QA environment config
-├── .env.staging                  # Staging environment config
-├── .env.example                  # Environment template (tracked in git)
-├── cypress.config.js             # Cypress configuration
-└── package.json
-└── Dockerfile                    # Multi-stage Cypress Docker image
-└── docker-compose.yml            # Container orchestration with mounts
-└── .dockerignore                 # Minimal Docker build context
+│       ├── constants.js          # Shared constants and enums
+│       └── helpers.js            # Utility functions (date formatting, data generators)
+├── reports/                      # Generated test artifacts (gitignored)
+│   ├── allure-results/           # Raw Allure data (JSON/XML)
+│   ├── allure-report/            # Allure HTML dashboard
+│   ├── mochawesome/              # Per-spec Mochawesome JSON
+│   ├── mochawesome-report/       # Merged Mochawesome HTML
+│   ├── cucumber-report/          # Cucumber JSON report
+│   ├── screenshots/              # Failure screenshots (full-page PNG)
+│   ├── videos/                   # Test execution recordings (MP4)
+│   └── logs/                     # Execution logs
+├── .github/workflows/
+│   └── ci.yml                    # GitHub Actions: lint → smoke (chrome+firefox) + regression (×3 parallel) → report → Pages
+├── Dockerfile                    # Multi-stage: base (cypress/base:20) → dependencies → production
+├── docker-compose.yml            # 6 volume mounts, ipc:host, init:true, seccomp:unconfined
+├── Jenkinsfile                   # Declarative pipeline: parameters, parallel smoke+regression, Allure publish, email
+├── cypress.config.js             # Cypress configuration: Cucumber, esbuild, Allure writer, Mochawesome reporter
+├── .eslintrc.json                # ESLint rules: curly, no-unsafe-chain, no-async-tests, no-console warn
+├── .prettierrc                   # Prettier config with gherkin plugin for .feature files
+├── .env.dev / .env.qa / .env.staging / .env.example
+├── .gitignore
+├── .dockerignore
+└── package.json                  # All scripts, dependencies, cypress-cucumber-preprocessor config
 ```
+
+## Prerequisites
+
+- **Node.js 20+**
+- **npm 10+**
+- **Java 8+** (for Allure report generation)
+- **Docker Desktop 4.x+** (optional, for containerized runs)
 
 ## Quick Start
 
 ```bash
+# Install dependencies
 npm install
-npm run open          # Launch Cypress Test Runner (default: dev)
-npm run test          # Headless execution (default: dev)
-```
 
-## Docker Execution
+# Open Cypress Test Runner (dev environment)
+npm run open
 
-Run tests in a containerized environment with zero local setup (no Node, no Cypress needed).
-
-### Prerequisites
-- Docker Desktop 4.x+
-- 4GB+ allocated RAM
-
-### Build the image
-
-```bash
-npm run docker:build
-```
-
-### Run tests
-
-```bash
-# All tests (default: dev environment)
-npm run docker:test
+# Headless execution (dev environment)
+npm run test
 
 # Specific environment
-npm run docker:test:qa
-npm run docker:test:staging
+npm run test:qa
+npm run test:staging
 
-# By tag
-npm run docker:smoke
-npm run docker:regression
-npm run docker:api
-
-# With custom environment variable
-ENV=qa docker compose run --rm cypress npx cypress run --browser chrome --env Tags=@smoke
+# Run with tags
+npm run cypress:run -- --env Tags="@smoke"
+npm run cypress:run -- --env Tags="@api"
 ```
-
-### How it works
-
-```bash
-docker compose run --rm cypress npx cypress run --browser chrome
-         │              │       │
-         │              │       └─ Override CMD (default: --browser chrome)
-         │              └─ Service name from docker-compose.yml
-         └─ --rm removes container after run
-```
-
-### Volume mounts
-
-| Host path | Container path | Purpose |
-|-----------|---------------|---------|
-| `reports/screenshots/` | `/app/reports/screenshots/` | Failure screenshots |
-| `reports/videos/` | `/app/reports/videos/` | Test recordings |
-| `reports/allure-results/` | `/app/reports/allure-results/` | Allure raw data |
-| `reports/mochawesome/` | `/app/reports/mochawesome/` | Mochawesome JSON |
-| `reports/cucumber-report/` | `/app/reports/cucumber-report/` | Cucumber JSON |
-| `reports/logs/` | `/app/reports/logs/` | Execution logs |
-
-### Docker architecture
-
-The `Dockerfile` uses multi-stage builds:
-
-| Stage | Base | Purpose |
-|-------|------|---------|
-| `base` | `cypress/base:20` | Node 20 + system dependencies |
-| `dependencies` | `base` | npm install + Cypress verify (cached layer) |
-| `production` | `dependencies` | Source code + report dirs (final image) |
-
-**Performance optimizations:**
-- Multi-stage build minimizes final image size
-- `package.json` copied first for npm layer caching (only re-installs when deps change)
-- `CI=1` disables Cypress GUI overhead
-- `ipc: host` and `init: true` for stable process handling
-- `--prefer-offline` npm flag for faster installs
-- `.dockerignore` excludes 90% of build context (reports, git, env files, node_modules)
 
 ## Application Under Test
 
-| Application | URL | Test Type |
-|-------------|-----|-----------|
-| **[SauceDemo](https://www.saucedemo.com)** | UI e-commerce demo app | UI / BDD |
-| **[JSONPlaceholder](https://jsonplaceholder.typicode.com)** | Free fake REST API | API / BDD |
+| Application | URL | Type |
+|-------------|-----|------|
+| **SauceDemo** | https://www.saucedemo.com | UI e-commerce demo app |
+| **JSONPlaceholder** | https://jsonplaceholder.typicode.com | Free fake REST API |
+
+## Test Scenarios
+
+### SauceDemo Login (`login.feature`) — 7 scenarios
+
+| Scenario | Tags | Description |
+|----------|------|-------------|
+| Successful login with standard user | `@smoke @positive` | Valid credentials → redirect to inventory |
+| Login with locked out user | `@smoke @negative` | Locked user → error message, stays on login page |
+| Login with invalid credentials | `@negative` | Invalid user/pass → error message, stays on login |
+| Login with empty credentials (×3) | `@negative` | Data-driven: missing user, missing pass, both missing |
+| Successful logout after login | `@positive` | Login → logout → redirect to login page |
+
+### JSONPlaceholder API (`posts.feature`) — 10 scenarios
+
+| Scenario | Tags | What it validates |
+|----------|------|-------------------|
+| GET all posts | `@api @smoke` | Array response, 200 status, minimum length, field presence |
+| GET single post by ID | `@api` | Correct ID, title, body, userId returned |
+| GET comments for a post | `@api` | Array of comments, email format, postId match |
+| POST creates a new post | `@api` | 201 status, returned ID, echoed body fields |
+| PUT updates an existing post | `@api` | 200 status, updated fields match |
+| PATCH partially updates a post | `@api` | 200 status, only patched field changed |
+| DELETE removes a post | `@api` | 200 status |
+| GET non-existent post | `@api @negative` | 404 status |
+| POST with empty body | `@api @negative` | 400 or 201, graceful handling |
+| Response headers | `@api` | Content-Type header present |
 
 ## Environment Configuration
 
-| File | ENV value | Command |
-|------|-----------|---------|
-| `.env.dev` | `dev` | `ENV=dev npm run test` |
+The framework uses `dotenv` with environment-specific `.env.*` files loaded by `config/env-manager.js`.
+
+| File | `ENV` value | Load command |
+|------|-------------|--------------|
+| `.env.dev` | `dev` | `ENV=dev npm run test` (default) |
 | `.env.qa` | `qa` | `ENV=qa npm run test` |
 | `.env.staging` | `staging` | `ENV=staging npm run test` |
 
+`.env.example` is tracked in git as a template. Actual `.env.*` files are gitignored. When a `.env.*` file is missing, `env-manager.js` falls back to `.env.example`.
+
 ### Environment Variables
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `BASE_URL` | Yes | Application base URL (SauceDemo) |
-| `API_URL` | Yes | API base URL (JSONPlaceholder) |
-| `USERNAME` | Yes | Default test user |
-| `PASSWORD` | Yes | Default test user password |
-| `IMPLICIT_TIMEOUT` | No | Default element wait (ms) |
-| `EXPLICIT_TIMEOUT` | No | Explicit wait timeout (ms) |
-| `PAGE_LOAD_TIMEOUT` | No | Page load timeout (ms) |
+| Variable | Required | Default (from `.env.example`) | Description |
+|----------|----------|-------------------------------|-------------|
+| `BASE_URL` | Yes | `https://www.saucedemo.com` | Application base URL |
+| `API_URL` | Yes | `https://jsonplaceholder.typicode.com` | API base URL |
+| `USERNAME` | Yes | `standard_user` | Default test user |
+| `PASSWORD` | Yes | `secret_sauce` | Default test user password |
+| `IMPLICIT_TIMEOUT` | No | `10000` | Default implicit wait (ms) |
+| `EXPLICIT_TIMEOUT` | No | `15000` | Explicit wait timeout (ms) |
+| `PAGE_LOAD_TIMEOUT` | No | `30000` | Page load timeout (ms) |
 
-## Reporting
-
-The framework produces three report types. After a test run, generate all reports with:
-
-```bash
-npm run report:generate
-```
-
-### Allure Report (Primary)
-
-Rich BDD-compatible reporting with test steps, attachments, timings, and trends.
-
-**Prerequisite:** Java 8+ runtime for Allure CLI.
-
-```bash
-npm run report:allure:generate    # Generate Allure HTML from raw results
-npm run report:allure:open        # Open Allure report in browser
-```
-
-### Mochawesome Report (Secondary)
-
-Standalone HTML report with embedded screenshots and charts.
-
-```bash
-npm run report:mochawesome:full   # Merge JSON + generate HTML
-```
-
-### Consolidated
-
-```bash
-npm run report:generate           # Generate Allure + Mochawesome reports
-npm run report:open               # Open Allure report
-npm run report:clean              # Clean all report artifacts
-```
-
-### Report Directory Layout
-
-```
-reports/
-├── allure-results/          # Raw JSON/XML from test run (input for Allure)
-├── allure-report/           # Generated Allure HTML dashboard
-│   ├── index.html           # Entry point — open this
-│   ├── data/                # Test data, timelines, trends
-│   └── widgets/             # Summary widgets
-├── mochawesome/             # Per-spec JSON files from test run
-├── mochawesome-report/      # Merged HTML report
-│   ├── merged.json          # Combined mochawesome JSON
-│   └── merged.html          # Standalone HTML report
-├── screenshots/             # Failure screenshots (full-page)
-├── videos/                  # Test execution videos (WebM/MP4)
-└── logs/                    # Test execution logs
-```
-
-### What Gets Captured
-
-| Artifact | When | Format |
-|----------|------|--------|
-| Screenshots | On test failure | PNG (full-page) |
-| Videos | Entire test run | WebM/MP4 |
-| API logs | Every `cy.request()` | Cypress console + allure steps |
-| Console logs | Cypress events | Browser console |
+In CI, environment variables come from GitHub Actions secrets / Jenkins credentials rather than `.env.*` files.
 
 ## API Automation Framework
 
-### API Client (`cypress/api/api-client.js`)
+### ApiClient (`cypress/api/api-client.js`)
+
+Reusable CRUD client that auto-logs every request/response to Allure and Cypress console.
 
 | Method | Description |
 |--------|-------------|
-| `get(path, options)` | GET request with query params |
+| `get(path, options)` | GET with query params support |
 | `post(path, body, options)` | POST with JSON body |
 | `put(path, body, options)` | Full resource update |
 | `patch(path, body, options)` | Partial resource update |
 | `delete(path, options)` | Resource deletion |
 | `send(method, path, options)` | Generic request (any HTTP method) |
 
-All requests are automatically logged to Allure steps and Cypress console.
+All methods return Cypress chainables (via `cy.wrap()`), supporting `.then()` chaining in step definitions. Negative tests pass `{ failOnStatusCode: false }` to handle 4xx responses without Cypress auto-failure.
 
-### Response Validator (`cypress/api/response-validator.js`)
+### ResponseValidator (`cypress/api/response-validator.js`)
+
+Chained assertion engine — 25+ methods including:
 
 ```js
 ResponseValidator.from(response)
   .status(200)
   .bodyHasField("id")
-  .bodyFieldEquals("title", "foo")
+  .bodyFieldEquals("title", "expected title")
+  .bodyIsArray()
+  .bodyArrayMinLength(1)
   .headerExists("Content-Type")
   .durationLessThan(3000);
 ```
 
-### Schema Validator (`cypress/api/schema-validator.js`)
+### SchemaValidator (`cypress/api/schema-validator.js`)
+
+Zero-dependency JSON schema validator supporting 12 constraint types: `type`, `required`, `properties`, `items`, `minLength`, `maxLength`, `minimum`, `maximum`, `enum`, `pattern`, `additionalProperties`, `array` item validation.
 
 ```js
 SchemaValidator.assertSchema(data, {
@@ -275,60 +207,226 @@ SchemaValidator.assertSchema(data, {
   properties: {
     id: { type: "integer", minimum: 1 },
     title: { type: "string", minLength: 1 },
-    body: { type: "string" },
   },
 });
 ```
 
-### API Scenarios
+## Reporting
 
-The `posts.feature` covers 10 scenarios across all CRUD operations, negative tests, and schema validation.
+Three report types. Generate all after a test run:
 
-## NPM Scripts
+```bash
+npm run report:generate
+```
+
+### Allure Report (Primary)
+
+Rich BDD-compatible dashboard with steps, attachments, timelines, trends, and history.
+
+```bash
+npm run report:allure:generate    # Generate HTML from raw results
+npm run report:allure:open        # Open in browser
+```
+
+### Mochawesome Report (Secondary)
+
+Standalone HTML with embedded screenshots and charts — no server needed.
+
+```bash
+npm run report:mochawesome:full   # Merge per-spec JSON → generate HTML
+```
+
+### What Gets Captured
+
+| Artifact | When | Format |
+|----------|------|--------|
+| Screenshots | On test failure (with retry) | PNG (full-page) |
+| Videos | Entire test run | MP4 |
+| API logs | Every `cy.request()` | Allure steps + Cypress console |
+| Console logs | Cypress events | Browser console |
+
+### Key Reporting Config (`config/report-config.js`)
+
+- Allure: `resultsDir: "reports/allure-results"`, clean before run via `pretest` script
+- Mochawesome: per-spec JSON → merged → HTML via `mochawesome-merge` + `marge`
+- `@shelex/cypress-allure-plugin/writer` is imported from the writer-only path (not the main entry) to avoid `Cypress.Commands.add` crash during config load
+
+## CI/CD
+
+### GitHub Actions (`.github/workflows/ci.yml`)
+
+```yaml
+Triggers: push (main/develop), PR (main), workflow_dispatch, schedule (weekdays 06:00)
+```
+
+**Pipeline stages:**
+
+| Stage | Details |
+|-------|---------|
+| **lint** | ESLint (0 errors) + Prettier check (JS, JSON, `.feature` files) |
+| **smoke** | Matrix: chrome + firefox, `@smoke` tag, 15min timeout |
+| **regression** | Chrome × 3 parallel (`ci:regression:0/1/2`), `@regression` tag, 30min timeout |
+| **generate-report** | Consolidates artifacts from all parallel runs, generates Allure + Mochawesome, deploys to GitHub Pages (`gh-pages` branch) |
+
+**Key details:**
+- `cypress-io/github-action@v6` with `install: false` (uses `npm ci` from separate step)
+- Cypress binary cached via `actions/cache@v4`
+- Artifacts: screenshots, videos, allure-results, mochawesome JSON (7-day retention)
+- `continue-on-error: true` on regression so report stage runs even on test failures
+- `permissions: contents: write` on `generate-report` job for `peaceiris/actions-gh-pages@v3`
+
+### Jenkins (Jenkinsfile)
+
+Declarative pipeline with parameters and parallel execution:
+
+| Parameter | Default | Options |
+|-----------|---------|---------|
+| `ENVIRONMENT` | `dev` | dev, qa, staging |
+| `TEST_TAGS` | `@regression` | any Cucumber tag expression |
+| `PARALLEL_WORKERS` | `1` | 1-4 |
+| `RUN_LINT` | `true` | toggle lint stage |
+
+**Pipeline:** Setup → Lint (conditional) → Smoke + Regression (parallel) → Generate Reports → Email notification (success/failure with Allure link).
+
+### GitHub Actions + Jenkins differences
+
+| Aspect | GitHub Actions | Jenkins |
+|--------|---------------|---------|
+| Runner | `ubuntu-latest` | Jenkins agent (`cypress-executor`) |
+| Parallelism | Matrix strategies (smoke: 2 browsers, regression: 3 splits) | Declarative parallel stages |
+| Lint | Separate job (blocking) | Optional stage (parameter toggle) |
+| Reports | Generated in `generate-report` job, deployed to Pages | Generated in stage, published via Allure plugin |
+| Notifications | — | Email with Allure report link |
+| Cypress Dashboard | — | `--record` with `--parallel` when `PARALLEL_WORKERS > 1` |
+
+## Docker Execution
+
+Run tests with zero local setup (no Node, no Cypress binary needed).
+
+### Build
+
+```bash
+npm run docker:build
+```
+
+### Run
+
+```bash
+# All tests (default: dev)
+npm run docker:test
+
+# Specific environment
+npm run docker:test:qa
+npm run docker:test:staging
+
+# By tag
+npm run docker:smoke      # @smoke
+npm run docker:regression  # @regression
+npm run docker:api         # @api
+
+# Interactive shell
+npm run docker:bash
+```
+
+### Architecture
+
+`Dockerfile`: multi-stage build
+
+| Stage | Base | Content |
+|-------|------|---------|
+| `base` | `cypress/base:20` | Node 20 + system deps (no Cypress) |
+| `dependencies` | `base` | `npm ci` + `cypress verify` (cached layer) |
+| `production` | `dependencies` | Source code + report directories |
+
+`docker-compose.yml`: 6 volume mounts for report persistence, `ipc: host`, `init: true`, `seccomp: unconfined`.
+
+## Code Quality
+
+### ESLint Rules (`.eslintrc.json`)
+
+| Rule | Enforcement |
+|------|-------------|
+| `curly` | **error** — braces required after all `if`/`else` (no single-line) |
+| `cypress/unsafe-to-chain-command` | **error** — no `.clear().type()`, split into separate `cy.get()` calls |
+| `cypress/no-async-tests` | **error** — no async test functions |
+| `no-console` | **warn** — intentional warnings for `cy.log()` in hooks |
+| `no-debugger` | **error** — no debugger statements |
+| `prefer-const` | **error** — `let` only when reassigning |
+| `eqeqeq` | **error** — always use `===` |
+| `no-unused-vars` | **warn** — `_` prefix args ignored |
+
+### Prettier (`.prettierrc`)
+
+Formats `.js`, `.json`, and `.feature` files (via `prettier-plugin-gherkin` with `gherkin` parser override).
+
+```bash
+npm run lint          # ESLint check
+npm run lint:fix      # ESLint auto-fix
+npm run format        # Prettier write
+npm run format:check  # Prettier check (CI)
+```
+
+## NPM Scripts Reference
 
 ### Test Execution
+
 | Script | Description |
 |--------|-------------|
 | `test` | Run all tests (respects `ENV` var) |
-| `test:dev` | Run in dev environment |
-| `test:qa` | Run in QA environment |
-| `test:staging` | Run in staging environment |
-| `test:chrome` | Run in Chrome |
-| `test:firefox` | Run in Firefox |
-| `open` | Open Cypress Test Runner |
+| `test:dev` | Dev environment |
+| `test:qa` | QA environment |
+| `test:staging` | Staging environment |
+| `test:chrome` | Chrome browser |
+| `test:firefox` | Firefox browser |
+| `open` | Launch Cypress Test Runner |
 | `open:dev` / `open:qa` / `open:staging` | Open in specific env |
 
-### Reporting
+### CI Scripts
+
 | Script | Description |
 |--------|-------------|
-| `report:generate` | Generate Allure + Mochawesome reports |
-| `report:open` | Open Allure report in browser |
-| `report:allure:generate` | Generate Allure HTML from raw results |
-| `report:allure:open` | Open Allure report |
-| `report:mochawesome:full` | Merge JSON + generate Mochawesome HTML |
+| `ci:lint` | ESLint + Prettier check |
+| `ci:smoke` | `@smoke` tagged tests in Chrome |
+| `ci:regression` | `@regression` tagged tests in Chrome |
+| `ci:regression:0` | Login feature only (parallel split) |
+| `ci:regression:1` | API features only (parallel split) |
+| `ci:regression:2` | All remaining features (parallel split) |
+| `ci:all` | All features in Chrome |
+
+### Reporting
+
+| Script | Description |
+|--------|-------------|
+| `report:generate` | Allure + Mochawesome |
+| `report:open` | Open Allure report |
+| `report:allure:generate` | Allure HTML from raw data |
+| `report:allure:open` | Open Allure |
+| `report:mochawesome:full` | Merge JSON + generate HTML |
 | `report:mochawesome:merge` | Merge mochawesome JSON files |
-| `report:mochawesome:generate` | Generate HTML from merged JSON |
+| `report:mochawesome:generate` | HTML from merged JSON |
 | `report:clean` | Clean all report artifacts |
 
 ### Docker
+
 | Script | Description |
 |--------|-------------|
-| `docker:build` | Build Docker image with --pull |
-| `docker:test` | Run all tests in container |
-| `docker:test:dev` | Run in dev environment |
-| `docker:test:qa` | Run in QA environment |
-| `docker:test:staging` | Run in staging environment |
-| `docker:smoke` | Run `@smoke` tests in container |
-| `docker:regression` | Run `@regression` tests in container |
-| `docker:api` | Run `@api` tests in container |
-| `docker:bash` | Open bash shell in container |
+| `docker:build` | Build with `--pull` |
+| `docker:test` | All tests |
+| `docker:test:dev` | Dev environment |
+| `docker:test:qa` | QA environment |
+| `docker:test:staging` | Staging environment |
+| `docker:smoke` | `@smoke` tag |
+| `docker:regression` | `@regression` tag |
+| `docker:api` | `@api` tag |
+| `docker:bash` | Interactive shell |
 
 ### Code Quality
+
 | Script | Description |
 |--------|-------------|
 | `lint` | ESLint check |
 | `lint:fix` | ESLint auto-fix |
-| `format` | Prettier format |
+| `format` | Prettier write |
 | `format:check` | Prettier check |
 
 ## Running with Tags
@@ -337,11 +435,20 @@ The `posts.feature` covers 10 scenarios across all CRUD operations, negative tes
 # API tests only
 npm run cypress:run -- --env Tags="@api"
 
-# Smoke tests only
+# Smoke tests (fast feedback)
 npm run cypress:run -- --env Tags="@smoke"
 
 # Negative tests
 npm run cypress:run -- --env Tags="@negative"
+
+# Positive tests
+npm run cypress:run -- --env Tags="@positive"
+
+# Combined tags (AND)
+npm run cypress:run -- --env Tags="@smoke and @positive"
+
+# Exclude tags (default: not @ignore)
+npm run cypress:run -- --env Tags="not @negative"
 
 # Full regression with reports
 npm run cypress:run && npm run report:generate
@@ -349,12 +456,13 @@ npm run cypress:run && npm run report:generate
 
 ## Architecture Principles
 
-- **Page Object Model** — UI interactions encapsulated in page classes
-- **API Client Pattern** — Reusable CRUD client with automatic logging
-- **BDD** — Business-readable scenarios with Gherkin syntax
-- **Environment-first** — All config driven by `.env.*` files, zero hardcoded secrets
-- **Reporting-first** — Allure + Mochawesome with screenshots, videos, and logs
-- **DRY** — Shared validation utilities across UI and API tests
-- **Data-driven** — Scenario Outlines, fixtures, and schemas for test data variation
-- **Tag-based** — Organize and filter tests by layer, type, and priority
-- **Reusable hooks** — Before/After hooks at feature, tag, and scenario level
+- **Page Object Model** — UI interactions encapsulated in page classes extending `BasePage`
+- **API Client Pattern** — Reusable CRUD client with automatic Allure logging
+- **BDD** — Business-readable Gherkin scenarios, tags for organization
+- **Environment-first** — All config driven by `ENV` var and `.env.*` files, zero hardcoded secrets
+- **Reporting-first** — Allure + Mochawesome with screenshots, videos, and API logs for every test
+- **DRY** — Shared `ResponseValidator` and `SchemaValidator` across all API step definitions
+- **Data-driven** — Scenario Outlines, fixtures, and JSON schemas for test data variation
+- **Tag-based** — Organize and filter tests by layer (`@api`, `@ui`), type (`@smoke`, `@regression`), and intent (`@positive`, `@negative`)
+- **No hardcoded waits** — Built-in Cypress retry-ability (`.should()`, timeouts) instead of `cy.wait()`
+- **Cypress-native chaining** — Async commands use `cy.wrap()` for proper chain continuation, never Promise `.catch()` on Cypress chains
