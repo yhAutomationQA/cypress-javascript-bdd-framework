@@ -37,6 +37,7 @@ const ALLURE_CONFIG = Object.freeze({
   reportDir: REPORT_DIRS.ALLURE_REPORT,
   cleanResults: true,
   allure: true,
+  allureResultsPath: REPORT_DIRS.ALLURE_RESULTS,
   allureAddVideoOnPass: false,
   allureAttachRequests: true,
   allureSkipSteps: ["pass", "fail", "pending", "skipped"],

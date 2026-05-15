@@ -6,7 +6,7 @@ const {
 const {
   createEsbuildPlugin,
 } = require("@badeball/cypress-cucumber-preprocessor/esbuild");
-const { allureWriter } = require("@shelex/cypress-allure-plugin");
+const allureWriter = require("@shelex/cypress-allure-plugin/writer");
 const envManager = require("./config/env-manager");
 const { CYPRESS_CONFIG, ALLURE_CONFIG } = require("./config/report-config");
 
