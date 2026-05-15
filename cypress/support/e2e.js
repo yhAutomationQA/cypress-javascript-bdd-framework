@@ -10,6 +10,12 @@ Cypress.on("fail", (error, runnable) => {
   throw error;
 });
 
+Cypress.on("log:added", (options) => {
+  if (options.instrument === "command" && options.message.startsWith("API:")) {
+    console.log(`[${options.instrument}] ${options.message}`);
+  }
+});
+
 before(() => {
   cy.log("Test suite execution started");
 });

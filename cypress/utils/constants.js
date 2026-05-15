@@ -15,12 +15,12 @@ const ROUTES = Object.freeze({
 });
 
 const API_ENDPOINTS = Object.freeze({
-  LOGIN: "/auth/login",
-  LOGOUT: "/auth/logout",
+  POSTS: "/posts",
+  POST_BY_ID: (id) => `/posts/${id}`,
+  POST_COMMENTS: (id) => `/posts/${id}/comments`,
   USERS: "/users",
-  REFRESH: "/auth/refresh",
-  RESET: "/test/reset",
-  SEED: "/test/seed",
+  USER_BY_ID: (id) => `/users/${id}`,
+  COMMENTS: "/comments",
 });
 
 const ERROR_MESSAGES = Object.freeze({
@@ -51,15 +51,21 @@ const TIMEOUTS = () => {
   });
 };
 
-const VIEWPORTS = Object.freeze({
-  DESKTOP: { width: 1280, height: 720 },
-  TABLET: { width: 768, height: 1024 },
-  MOBILE: { width: 375, height: 812 },
-});
-
-const SORT_ORDERS = Object.freeze({
-  ASC: "asc",
-  DESC: "desc",
+const HTTP_STATUS = Object.freeze({
+  OK: 200,
+  CREATED: 201,
+  ACCEPTED: 202,
+  NO_CONTENT: 204,
+  BAD_REQUEST: 400,
+  UNAUTHORIZED: 401,
+  FORBIDDEN: 403,
+  NOT_FOUND: 404,
+  METHOD_NOT_ALLOWED: 405,
+  CONFLICT: 409,
+  UNPROCESSABLE: 422,
+  TOO_MANY: 429,
+  SERVER_ERROR: 500,
+  BAD_GATEWAY: 502,
 });
 
 const HTTP_METHODS = Object.freeze({
@@ -68,6 +74,8 @@ const HTTP_METHODS = Object.freeze({
   PUT: "PUT",
   PATCH: "PATCH",
   DELETE: "DELETE",
+  HEAD: "HEAD",
+  OPTIONS: "OPTIONS",
 });
 
 module.exports = {
@@ -76,7 +84,6 @@ module.exports = {
   API_ENDPOINTS,
   ERROR_MESSAGES,
   TIMEOUTS,
-  VIEWPORTS,
-  SORT_ORDERS,
+  HTTP_STATUS,
   HTTP_METHODS,
 };

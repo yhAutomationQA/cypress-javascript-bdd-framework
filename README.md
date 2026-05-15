@@ -15,26 +15,44 @@ Enterprise-grade Cypress automation framework using Cucumber BDD with JavaScript
 
 ```
 ├── config/
-│   └── env-manager.js         # Environment configuration loader
+│   └── env-manager.js            # Environment configuration loader
 ├── cypress/
+│   ├── api/                      # API automation framework
+│   │   ├── api-client.js         # Reusable CRUD API client with logging
+│   │   ├── response-validator.js # Response status, body, header, duration assertions
+│   │   └── schema-validator.js   # JSON schema validation engine
 │   ├── e2e/
-│   │   └── features/          # Gherkin .feature files
-│   ├── step-definitions/      # Cucumber step definitions
-│   ├── pages/                 # Page Object Models
+│   │   ├── features/
+│   │   │   ├── api/
+│   │   │   │   └── posts.feature # Posts CRUD BDD scenarios
+│   │   │   └── login.feature     # Login BDD scenarios
+│   ├── step-definitions/
+│   │   ├── api/
+│   │   │   ├── common.steps.js   # Generic reusable API step definitions
+│   │   │   └── posts.steps.js    # Post-specific business steps
+│   │   └── login.steps.js        # Login step definitions
+│   ├── pages/                    # Page Object Models
 │   │   ├── BasePage.js
 │   │   ├── LoginPage.js
 │   │   └── InventoryPage.js
-│   ├── fixtures/              # Test data (JSON)
-│   ├── support/               # Custom commands & setup
-│   │   ├── commands.js
-│   │   └── e2e.js
-│   └── utils/                 # Helpers & constants
-├── reports/                   # Screenshots, videos, HTML
-├── .env.dev                   # Development environment config
-├── .env.qa                    # QA environment config
-├── .env.staging               # Staging environment config
-├── .env.example               # Environment template (tracked in git)
-├── cypress.config.js          # Cypress configuration
+│   ├── fixtures/
+│   │   ├── api/
+│   │   │   ├── posts.json        # Posts API test data
+│   │   │   └── schemas/
+│   │   │       └── posts-schema.json # Post, comment JSON schemas
+│   │   └── example.json          # UI test data
+│   ├── support/
+│   │   ├── commands.js           # Custom Cypress commands
+│   │   └── e2e.js                # Global hooks, error handling
+│   └── utils/
+│       ├── constants.js          # Shared constants
+│       └── helpers.js            # Utility functions
+├── reports/                      # Screenshots, videos, HTML
+├── .env.dev                      # Development environment config
+├── .env.qa                       # QA environment config
+├── .env.staging                  # Staging environment config
+├── .env.example                  # Environment template (tracked in git)
+├── cypress.config.js             # Cypress configuration
 └── package.json
 ```
 
@@ -48,20 +66,16 @@ npm run test          # Headless execution (default: dev)
 
 ## Application Under Test
 
-This framework targets **[SauceDemo](https://www.saucedemo.com)** — a demo e-commerce application.
+This framework targets two applications:
 
-### Test Users
-
-| User | Password | Behavior |
-|------|----------|----------|
-| `standard_user` | `secret_sauce` | Standard login, full access |
-| `locked_out_user` | `secret_sauce` | Login rejected, account locked |
-| `problem_user` | `secret_sauce` | Login succeeds, UI issues |
-| `performance_glitch_user` | `secret_sauce` | Login succeeds, slow load |
+| Application | URL | Test Type |
+|-------------|-----|-----------|
+| **[SauceDemo](https://www.saucedemo.com)** | UI e-commerce demo app | UI / BDD |
+| **[JSONPlaceholder](https://jsonplaceholder.typicode.com)** | Free fake REST API | API / BDD |
 
 ## Environment Configuration
 
-The framework supports multi-environment execution via `.env.*` files managed by `config/env-manager.js`.
+The framework supports multi-environment execution via `.env.*` files.
 
 ### Available Environments
 
@@ -71,44 +85,80 @@ The framework supports multi-environment execution via `.env.*` files managed by
 | `.env.qa` | `qa` | `ENV=qa npm run test` |
 | `.env.staging` | `staging` | `ENV=staging npm run test` |
 
-### Usage
-
-```bash
-# Specific environment
-ENV=qa npm run test
-npm run test:staging
-
-# Open Cypress Runner for an environment
-ENV=qa npm run open
-npm run open:qa
-```
-
 ### Environment Variables
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `BASE_URL` | Yes | Application base URL |
-| `API_URL` | Yes | API base URL |
+| `BASE_URL` | Yes | Application base URL (SauceDemo) |
+| `API_URL` | Yes | API base URL (JSONPlaceholder) |
 | `USERNAME` | Yes | Default test user |
 | `PASSWORD` | Yes | Default test user password |
 | `IMPLICIT_TIMEOUT` | No | Default element wait (ms) |
 | `EXPLICIT_TIMEOUT` | No | Explicit wait timeout (ms) |
 | `PAGE_LOAD_TIMEOUT` | No | Page load timeout (ms) |
 
-### Env-Manager API
+## API Automation Framework
 
-The `config/env-manager.js` provides runtime helpers accessible in tests:
+### API Client (`cypress/api/api-client.js`)
+
+Reusable CRUD client wrapping `cy.request()`:
+
+| Method | Description |
+|--------|-------------|
+| `get(path, options)` | GET request with query params |
+| `post(path, body, options)` | POST with JSON body |
+| `put(path, body, options)` | Full resource update |
+| `patch(path, body, options)` | Partial resource update |
+| `delete(path, options)` | Resource deletion |
+| `send(method, path, options)` | Generic request (any HTTP method) |
+
+Every request is automatically logged with method, URL, status, duration, and truncated body.
+
+### Response Validator (`cypress/api/response-validator.js`)
+
+Chained assertion builder:
 
 ```js
-Cypress.env("BASE_URL")         // "https://www.saucedemo.com"
-Cypress.env("USERNAME")         // "standard_user"
-Cypress.env("PASSWORD")         // "secret_sauce"
-Cypress.env("ENV")              // "qa"
-
-Helpers.getBaseUrl()            // Current env baseUrl
-Helpers.getCredentials()        // { username, password }
-Helpers.getTimeout("explicit")  // Current env explicit timeout
+ResponseValidator.from(response)
+  .status(200)
+  .bodyHasField("id")
+  .bodyFieldEquals("title", "foo")
+  .headerExists("Content-Type")
+  .durationLessThan(3000);
 ```
+
+### Schema Validator (`cypress/api/schema-validator.js`)
+
+Lightweight schema validation without external dependencies:
+
+```js
+SchemaValidator.assertSchema(data, {
+  type: "object",
+  required: ["id", "title", "body"],
+  properties: {
+    id: { type: "integer", minimum: 1 },
+    title: { type: "string", minLength: 1 },
+    body: { type: "string" },
+  },
+});
+```
+
+### API Scenarios
+
+The `posts.feature` covers 10 scenarios:
+
+| Scenario | Coverage |
+|----------|----------|
+| GET all posts | 200, array, required fields per item |
+| GET post by ID | 200, correct object, schema validated |
+| GET comments | 200, array, valid email pattern |
+| POST new post | 201, returned ID, field assertions |
+| PUT update post | 200, updated fields verified |
+| PATCH partial update | 200, only patched fields changed |
+| DELETE post | 200, success |
+| GET non-existent | 404, negative test |
+| POST empty body | 201, graceful handling |
+| Response headers | Content-Type present, duration check |
 
 ## NPM Scripts
 
@@ -133,24 +183,26 @@ Helpers.getTimeout("explicit")  // Current env explicit timeout
 ## Running with Tags
 
 ```bash
+# API tests only
+npm run cypress:run -- --env Tags="@api"
+
+# Smoke tests only
 npm run cypress:run -- --env Tags="@smoke"
-ENV=qa npm run cypress:run -- --env Tags="@regression and not @ignore"
-npm run cypress:run -- --env Tags="@positive"
+
+# API + login smoke
+npm run cypress:run -- --env Tags="@api or @smoke"
+
+# Negative tests
 npm run cypress:run -- --env Tags="@negative"
 ```
-
-## Writing Tests
-
-1. Create a `.feature` file in `cypress/e2e/features/`
-2. Implement step definitions in `cypress/step-definitions/`
-3. Create Page Objects in `cypress/pages/` for reusable UI interactions
 
 ## Architecture Principles
 
 - **Page Object Model** — UI interactions encapsulated in page classes
+- **API Client Pattern** — Reusable CRUD client with automatic logging
 - **BDD** — Business-readable scenarios with Gherkin syntax
 - **Environment-first** — All config driven by `.env.*` files, zero hardcoded secrets
-- **DRY** — Shared logic in BasePage, helpers, and custom commands
-- **Data-driven** — Scenario Outlines + fixtures for test data variation
-- **Tag-based** — Organize and filter tests by tags (@smoke, @regression, @negative, @positive)
+- **DRY** — Shared validation utilities across UI and API tests
+- **Data-driven** — Scenario Outlines, fixtures, and schemas for test data variation
+- **Tag-based** — Organize and filter tests by layer, type, and priority
 - **Reusable hooks** — Before/After hooks at feature, tag, and scenario level

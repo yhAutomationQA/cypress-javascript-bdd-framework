@@ -1,0 +1,47 @@
+{
+  "post": {
+    "type": "object",
+    "required": ["userId", "id", "title", "body"],
+    "properties": {
+      "userId": { "type": "integer", "minimum": 1 },
+      "id": { "type": "integer", "minimum": 1 },
+      "title": { "type": "string", "minLength": 1 },
+      "body": { "type": "string", "minLength": 0 }
+    }
+  },
+  "postList": {
+    "type": "array",
+    "minItems": 1,
+    "items": {
+      "type": "object",
+      "required": ["userId", "id", "title", "body"],
+      "properties": {
+        "userId": { "type": "integer", "minimum": 1 },
+        "id": { "type": "integer", "minimum": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "body": { "type": "string", "minLength": 0 }
+      }
+    }
+  },
+  "newPost": {
+    "type": "object",
+    "required": ["title", "body", "userId", "id"],
+    "properties": {
+      "title": { "type": "string", "minLength": 1 },
+      "body": { "type": "string", "minLength": 1 },
+      "userId": { "type": "integer", "minimum": 1 },
+      "id": { "type": "integer", "minimum": 1 }
+    }
+  },
+  "comment": {
+    "type": "object",
+    "required": ["postId", "id", "name", "email", "body"],
+    "properties": {
+      "postId": { "type": "integer", "minimum": 1 },
+      "id": { "type": "integer", "minimum": 1 },
+      "name": { "type": "string", "minLength": 1 },
+      "email": { "type": "string", "pattern": ".+@.+\\..+" },
+      "body": { "type": "string", "minLength": 1 }
+    }
+  }
+}

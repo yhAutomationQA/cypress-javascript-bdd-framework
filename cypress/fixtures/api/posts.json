@@ -1,0 +1,32 @@
+{
+  "baseUrl": "https://jsonplaceholder.typicode.com",
+  "endpoints": {
+    "posts": "/posts",
+    "postById": "/posts/1",
+    "postComments": "/posts/1/comments",
+    "nonExistentPost": "/posts/999999"
+  },
+  "newPost": {
+    "title": "Cypress BDD API Test",
+    "body": "This post was created during automated API testing using Cypress BDD framework.",
+    "userId": 1
+  },
+  "updatePost": {
+    "id": 1,
+    "title": "Updated Title via Cypress",
+    "body": "Updated body content via Cypress BDD API automation.",
+    "userId": 1
+  },
+  "patchPost": {
+    "title": "Partially Updated Title"
+  },
+  "expectedFields": ["userId", "id", "title", "body"],
+  "expectedStatusCode": {
+    "get": 200,
+    "post": 201,
+    "put": 200,
+    "patch": 200,
+    "delete": 200,
+    "notFound": 404
+  }
+}
