@@ -15,12 +15,12 @@ const ROUTES = Object.freeze({
 });
 
 const API_ENDPOINTS = Object.freeze({
-  LOGIN: "/api/v1/auth/login",
-  LOGOUT: "/api/v1/auth/logout",
-  USERS: "/api/v1/users",
-  REFRESH: "/api/v1/auth/refresh",
-  RESET: "/api/v1/test/reset",
-  SEED: "/api/v1/test/seed",
+  LOGIN: "/auth/login",
+  LOGOUT: "/auth/logout",
+  USERS: "/users",
+  REFRESH: "/auth/refresh",
+  RESET: "/test/reset",
+  SEED: "/test/seed",
 });
 
 const ERROR_MESSAGES = Object.freeze({
@@ -32,13 +32,24 @@ const ERROR_MESSAGES = Object.freeze({
   ACCESS_DENIED: "Access denied",
 });
 
-const TIMEOUTS = Object.freeze({
-  IMPLICIT: 5000,
-  EXPLICIT: 10000,
-  PAGE_LOAD: 30000,
-  NETWORK: 15000,
-  ANIMATION: 1000,
-});
+const TIMEOUTS = () => {
+  const getEnv = (key, fallback) => {
+    try {
+      return typeof Cypress !== "undefined" && Cypress.env
+        ? Cypress.env(key) || fallback
+        : fallback;
+    } catch {
+      return fallback;
+    }
+  };
+  return Object.freeze({
+    IMPLICIT: parseInt(getEnv("IMPLICIT_TIMEOUT", "5000"), 10),
+    EXPLICIT: parseInt(getEnv("EXPLICIT_TIMEOUT", "10000"), 10),
+    PAGE_LOAD: parseInt(getEnv("PAGE_LOAD_TIMEOUT", "30000"), 10),
+    NETWORK: 15000,
+    ANIMATION: 1000,
+  });
+};
 
 const VIEWPORTS = Object.freeze({
   DESKTOP: { width: 1280, height: 720 },

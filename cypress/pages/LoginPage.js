@@ -46,6 +46,12 @@ class LoginPage extends BasePage {
     return this.loginWithCredentials(credentials.email, credentials.password);
   }
 
+  loginWithEnvCredentials() {
+    const email = Cypress.env("USERNAME");
+    const password = Cypress.env("PASSWORD");
+    return this.loginWithCredentials(email, password);
+  }
+
   toggleRememberMe() {
     return this.checkCheckbox(this.selectors.rememberMeCheckbox);
   }
@@ -73,10 +79,14 @@ class LoginPage extends BasePage {
   }
 
   getCredentialsForUserType(userType) {
+    const envEmail = Cypress.env("USERNAME");
+    const envPassword = Cypress.env("PASSWORD");
     const credentials = {
+      valid: { email: envEmail, password: envPassword },
       admin: { email: "admin@example.com", password: "admin123" },
-      user: { email: "user@example.com", password: "user123" },
+      user: { email: envEmail || "user@example.com", password: envPassword || "user123" },
       invalid: { email: "invalid@example.com", password: "wrongpass" },
+      locked: { email: "locked@example.com", password: "user123" },
     };
     return credentials[userType] || credentials.user;
   }

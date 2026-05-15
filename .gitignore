@@ -10,3 +10,7 @@ cypress/screenshots/
 cypress/videos/
 .env
 .env.local
+.env.dev
+.env.qa
+.env.staging
+.env.production

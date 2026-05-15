@@ -35,7 +35,7 @@ When("the user enables {string}", (option) => {
 });
 
 When("the user logs in with valid credentials", () => {
-  loginPage.loginWithCredentials("user@example.com", "user123");
+  loginPage.loginWithEnvCredentials();
 });
 
 When("the user logs in as {string}", (userType) => {

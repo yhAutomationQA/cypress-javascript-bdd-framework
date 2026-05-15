@@ -1,4 +1,26 @@
 class Helpers {
+  static getEnvVar(name, fallback = "") {
+    if (typeof Cypress !== "undefined" && Cypress.env) {
+      return Cypress.env(name) || fallback;
+    }
+    return process.env[name] || fallback;
+  }
+
+  static getBaseUrl() {
+    return this.getEnvVar("BASE_URL", Cypress.config("baseUrl"));
+  }
+
+  static getApiUrl() {
+    return this.getEnvVar("API_URL", `${this.getBaseUrl()}/api`);
+  }
+
+  static getCredentials() {
+    return {
+      username: this.getEnvVar("USERNAME", "user@example.com"),
+      password: this.getEnvVar("PASSWORD", "user123"),
+    };
+  }
+
   static generateRandomEmail() {
     const timestamp = Date.now();
     return `testuser_${timestamp}@example.com`;
@@ -72,6 +94,15 @@ class Helpers {
           `${encodeURIComponent(key)}=${encodeURIComponent(value)}`
       )
       .join("&");
+  }
+
+  static getTimeout(name) {
+    const timeouts = {
+      implicit: parseInt(this.getEnvVar("IMPLICIT_TIMEOUT", "5000"), 10),
+      explicit: parseInt(this.getEnvVar("EXPLICIT_TIMEOUT", "10000"), 10),
+      pageLoad: parseInt(this.getEnvVar("PAGE_LOAD_TIMEOUT", "30000"), 10),
+    };
+    return timeouts[name] || timeouts.explicit;
   }
 }
 

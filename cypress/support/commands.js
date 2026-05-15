@@ -1,8 +1,9 @@
 Cypress.Commands.add("loginByApi", (email, password) => {
+  const apiUrl = Cypress.env("API_URL") || Cypress.config("baseUrl");
   cy.session([email, password], () => {
     cy.request({
       method: "POST",
-      url: `${Cypress.config("baseUrl")}/api/v1/auth/login`,
+      url: `${apiUrl}/auth/login`,
       body: { email, password },
     }).then((response) => {
       expect(response.status).to.eq(200);
@@ -17,6 +18,17 @@ Cypress.Commands.add("loginByUi", (email, password) => {
   cy.get("#password").clear().type(password, { log: false });
   cy.get("button[type='submit']").click();
   cy.url().should("include", "/dashboard");
+});
+
+Cypress.Commands.add("loginByUiWithEnvCredentials", () => {
+  const email = Cypress.env("USERNAME");
+  const password = Cypress.env("PASSWORD");
+  cy.log(`Logging in as ${email}`);
+  cy.loginByUi(email, password);
+});
+
+Cypress.Commands.add("getApiUrl", () => {
+  return Cypress.env("API_URL") || `${Cypress.config("baseUrl")}/api`;
 });
 
 Cypress.Commands.add("getBySel", (selector, ...args) => {
@@ -44,12 +56,14 @@ Cypress.Commands.add("waitForApi", (alias, timeout = 30000) => {
 });
 
 Cypress.Commands.add("resetDatabase", () => {
-  cy.request("POST", `${Cypress.config("baseUrl")}/api/v1/test/reset`);
+  const apiUrl = Cypress.env("API_URL") || `${Cypress.config("baseUrl")}/api`;
+  cy.request("POST", `${apiUrl}/v1/test/reset`);
 });
 
 Cypress.Commands.add("seedDatabase", (fixture) => {
+  const apiUrl = Cypress.env("API_URL") || `${Cypress.config("baseUrl")}/api`;
   cy.fixture(fixture).then((data) => {
-    cy.request("POST", `${Cypress.config("baseUrl")}/api/v1/test/seed`, data);
+    cy.request("POST", `${apiUrl}/v1/test/seed`, data);
   });
 });
 

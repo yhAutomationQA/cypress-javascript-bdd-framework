@@ -4,6 +4,17 @@
   "description": "Enterprise-grade Cypress BDD automation framework with Cucumber",
   "private": true,
   "scripts": {
+    "test": "cypress run",
+    "test:dev": "ENV=dev cypress run",
+    "test:qa": "ENV=qa cypress run",
+    "test:staging": "ENV=staging cypress run",
+    "test:chrome": "cypress run --browser chrome",
+    "test:firefox": "cypress run --browser firefox",
+    "test:record": "cypress run --record",
+    "open": "cypress open",
+    "open:dev": "ENV=dev cypress open",
+    "open:qa": "ENV=qa cypress open",
+    "open:staging": "ENV=staging cypress open",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
     "cypress:run:chrome": "cypress run --browser chrome",
@@ -13,12 +24,15 @@
     "cypress:run:record": "cypress run --record",
     "cypress:run:spec": "cypress run --spec",
     "cypress:run:tag": "cypress run --env Tags=",
-    "lint": "eslint cypress/",
-    "lint:fix": "eslint cypress/ --fix",
-    "format": "prettier --write 'cypress/**/*.{js,json,feature}'",
-    "format:check": "prettier --check 'cypress/**/*.{js,json,feature}'",
+    "lint": "eslint cypress/ config/",
+    "lint:fix": "eslint cypress/ config/ --fix",
+    "format": "prettier --write 'cypress/**/*.{js,json,feature}' 'config/**/*.js'",
+    "format:check": "prettier --check 'cypress/**/*.{js,json,feature}' 'config/**/*.js'",
     "precommit": "npm run lint:fix && npm run format",
     "clean:reports": "rm -rf reports/*"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7"
   },
   "devDependencies": {
     "@badeball/cypress-cucumber-preprocessor": "^21.0.3",

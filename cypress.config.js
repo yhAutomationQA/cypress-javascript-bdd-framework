@@ -6,10 +6,13 @@ const {
 const {
   createEsbuildPlugin,
 } = require("@badeball/cypress-cucumber-preprocessor/esbuild");
+const envManager = require("./config/env-manager");
+
+const envConfig = envManager.load();
 
 module.exports = defineConfig({
   e2e: {
-    baseUrl: "https://example.com",
+    baseUrl: envConfig.baseUrl,
     specPattern: "**/*.feature",
     supportFile: "cypress/support/e2e.js",
     fixturesFolder: "cypress/fixtures",
@@ -18,8 +21,8 @@ module.exports = defineConfig({
     downloadsFolder: "cypress/downloads",
     viewportWidth: 1280,
     viewportHeight: 720,
-    defaultCommandTimeout: 10000,
-    pageLoadTimeout: 30000,
+    defaultCommandTimeout: envConfig.timeouts.explicit,
+    pageLoadTimeout: envConfig.timeouts.pageLoad,
     waitForAnimations: true,
     animationDistanceThreshold: 5,
     chromeWebSecurity: false,
@@ -32,6 +35,7 @@ module.exports = defineConfig({
       openMode: 0,
     },
     env: {
+      ...envManager.getCypressEnv(),
       TAGS: "not @ignore",
     },
     async setupNodeEvents(on, config) {
