@@ -59,6 +59,9 @@
   "dependencies": {
     "dotenv": "^16.4.7"
   },
+  "cypress-cucumber-preprocessor": {
+    "stepDefinitions": "cypress/step-definitions/**/*.{js,mjs,ts,tsx}"
+  },
   "devDependencies": {
     "@badeball/cypress-cucumber-preprocessor": "^21.0.3",
     "@bahmutov/cypress-esbuild-preprocessor": "^2.2.4",
