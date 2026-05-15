@@ -67,20 +67,6 @@ class ApiClient {
     return entry;
   }
 
-  _fail(error, method, url, reqBody) {
-    const separator = "!".repeat(60);
-    cy.log(separator);
-    cy.log(`API FAILED: ${method} ${url}`);
-    cy.log(`Error: ${error.message}`);
-    if (reqBody) {
-      const logBody =
-        typeof reqBody === "object" ? JSON.stringify(reqBody) : reqBody;
-      cy.log(`Request Body: ${logBody}`);
-    }
-    cy.log(separator);
-    throw error;
-  }
-
   get(path, options = {}) {
     const { headers = {}, qs = {}, failOnStatusCode = true } = options;
     const url = this._buildUrl(path);
@@ -101,10 +87,7 @@ class ApiClient {
       })
       .then((response) => {
         this._log("GET", url, null, response);
-        return response;
-      })
-      .catch((error) => {
-        this._fail(error, "GET", url, null);
+        return cy.wrap(response);
       });
   }
 
@@ -126,10 +109,7 @@ class ApiClient {
       })
       .then((response) => {
         this._log("POST", url, body, response);
-        return response;
-      })
-      .catch((error) => {
-        this._fail(error, "POST", url, body);
+        return cy.wrap(response);
       });
   }
 
@@ -151,10 +131,7 @@ class ApiClient {
       })
       .then((response) => {
         this._log("PUT", url, body, response);
-        return response;
-      })
-      .catch((error) => {
-        this._fail(error, "PUT", url, body);
+        return cy.wrap(response);
       });
   }
 
@@ -176,10 +153,7 @@ class ApiClient {
       })
       .then((response) => {
         this._log("PATCH", url, body, response);
-        return response;
-      })
-      .catch((error) => {
-        this._fail(error, "PATCH", url, body);
+        return cy.wrap(response);
       });
   }
 
@@ -199,10 +173,7 @@ class ApiClient {
       })
       .then((response) => {
         this._log("DELETE", url, null, response);
-        return response;
-      })
-      .catch((error) => {
-        this._fail(error, "DELETE", url, null);
+        return cy.wrap(response);
       });
   }
 
@@ -230,10 +201,7 @@ class ApiClient {
       })
       .then((response) => {
         this._log(method, url, body, response);
-        return response;
-      })
-      .catch((error) => {
-        this._fail(error, method, url, body);
+        return cy.wrap(response);
       });
   }
 

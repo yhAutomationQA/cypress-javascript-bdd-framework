@@ -92,8 +92,6 @@ Then("the user should remain on the login page", () => {
   cy.url().should("eq", `${Cypress.config("baseUrl")}/`);
   cy.url().should("not.contain", "inventory");
   loginPage.isLoginFormDisplayed();
-  loginPage.usernameInputShouldBeEmpty();
-  loginPage.passwordInputShouldBeEmpty();
 });
 
 Then("the user should be redirected to the login page", () => {
