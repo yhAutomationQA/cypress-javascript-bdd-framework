@@ -52,10 +52,6 @@ Cypress.Commands.add("waitForApi", (alias, timeout = 30000) => {
   cy.wait(`@${alias}`, { timeout });
 });
 
-Cypress.Commands.add("clearLocalStorage", () => {
-  cy.window().then((win) => win.localStorage.clear());
-});
-
 Cypress.Commands.add("clearSessionStorage", () => {
   cy.window().then((win) => win.sessionStorage.clear());
 });

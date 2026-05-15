@@ -27,8 +27,6 @@ class EnvManager {
 
     const envFilePath = path.resolve(process.cwd(), `.env.${this.targetEnv}`);
 
-    dotenv.config({ path: envFilePath });
-
     const result = dotenv.config({ path: envFilePath });
     if (result.error) {
       console.warn(
